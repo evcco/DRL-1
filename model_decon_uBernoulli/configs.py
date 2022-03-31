@@ -1,7 +1,7 @@
 #########################
 ## Author: Chaochao Lu ##
 #########################
-from collections import OrderedDict
+from collections import OrderedDict # TOLEARN from ... import ... 的用法
 import tensorflow as tf
 
 ########################################################################################################################

@@ -18,11 +18,11 @@ def main():
 
     print('starting processing data ...')
 
-    data = DataHandler(opts)
+    data = DataHandler(opts) # COMMENT 将数据集加载进来
 
 
     print('starting initialising model ...')
-    opts['r_range_upper'] = data.train_r_max
+    opts['r_range_upper'] = data.train_r_max # TOLEARN python中传递引用还是值？修改opts是否会对configs.model_config产生影响
     opts['r_range_lower'] = data.train_r_min
     model = Model_Decon(sess, opts)
 

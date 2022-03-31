@@ -225,7 +225,7 @@ class Model_Decon(object):
             # lm_split: nsteps x 1 x 2 x batch_size x lstm_dim
             lm_split = tf.split(lm_concat, lstm_input_shape[0], 0)
             lm_list = []
-            for i in xrange(lstm_input_shape[0]):
+            for i in range(lstm_input_shape[0]):
                 lm_list.append(tf.reshape(lm_split[i], [2, self.opts['batch_size'], self.opts['lstm_dim']]))
 
             elements = tf.convert_to_tensor(lm_list)
@@ -251,7 +251,7 @@ class Model_Decon(object):
             # lm_split: nsteps x 1 x 2 x batch_size x lstm_dim
             lm_split = tf.split(lm_concat, lstm_input_shape[0], 0)
             lm_list = []
-            for i in xrange(lstm_input_shape[0]):
+            for i in range(lstm_input_shape[0]):
                 lm_list.append(tf.reshape(lm_split[i], [2, self.opts['batch_size'], self.opts['lstm_dim']]))
 
             elements = tf.convert_to_tensor(lm_list)
@@ -371,7 +371,7 @@ class Model_Decon(object):
         # ha_split: nsteps x 1 x 2 x batch_size x lstm_dim
         ha_split = tf.split(ha_concat, x_seq.get_shape().as_list()[1], 0)
         ha_list = []
-        for i in xrange(x_seq.get_shape().as_list()[1]):
+        for i in range(x_seq.get_shape().as_list()[1]):
             ha_list.append(tf.reshape(ha_split[i], [2, self.opts['batch_size'], self.opts['lstm_dim']]))
 
         elements = tf.convert_to_tensor(ha_list)
@@ -651,6 +651,7 @@ class Model_Decon(object):
 ########################################################################################################################
 ############################################# train the model ##########################################################
 ########################################################################################################################
+# COMMENT 训练好模型之后，把模型参数放到文件里面。
     def train_model(self, data):
         batch_num = np.floor(data.train_num / self.opts['batch_size']).astype(int)
         counter = self.opts['counter_start']
@@ -686,7 +687,7 @@ class Model_Decon(object):
 
         print('starting epoch ...')
 
-        for epoch in xrange(self.opts['epoch_start'], self.opts['epoch_start'] + self.opts['epoch_num']):
+        for epoch in range(self.opts['epoch_start'], self.opts['epoch_start'] + self.opts['epoch_num']):
 
             if epoch > self.opts['epoch_start'] and epoch % self.opts['save_every_epoch'] == 0:
                 self.saver.save(self.sess, os.path.join(self.opts['work_dir'], 'model_checkpoints', 'model_decon'),
@@ -694,7 +695,7 @@ class Model_Decon(object):
 
             ids_perm = np.random.permutation(data.train_num)
 
-            for itr in xrange(batch_num):
+            for itr in range(batch_num):
                 start_time = time.time()
 
                 batch_ids = ids_perm[self.opts['batch_size'] * itr:self.opts['batch_size'] * (itr + 1)]

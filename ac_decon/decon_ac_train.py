@@ -175,7 +175,7 @@ class AC_Decon(object):
 
     def compute_r_g_cu(self):
         self.reward = []
-        for i in xrange(self.opts['u_sample_size']):
+        for i in range(self.opts['u_sample_size']):
             reward_mu, _ = self.model.p_r_g_z_a_u(self.z, self.a,
                                                   tf.reshape(self.u[i], [self.opts['batch_size'],
                                                                          self.opts['u_dim']]))
@@ -239,7 +239,7 @@ class AC_Decon(object):
 
         self.create_env()
 
-        for episode in xrange(self.opts['episode_num']):
+        for episode in range(self.opts['episode_num']):
 
             f = open(os.path.join(self.opts['work_dir'], 'plots', 'ac_decon_reward_data.txt'), 'a+')
 
@@ -264,7 +264,7 @@ class AC_Decon(object):
             z = self.compute_z_init(tr_x_init, tr_a_init, tr_r_init)
             u_est = self.compute_u_init(tr_x_init, tr_a_init, tr_r_init)
 
-            for step in xrange(self.opts['max_steps_in_episode']):
+            for step in range(self.opts['max_steps_in_episode']):
                 action = self.choose_action(z, False)
 
                 z_next, reward, done, reward_samples = self.step(z, action, tr_x_init, u_est)
