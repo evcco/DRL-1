@@ -1,6 +1,7 @@
 import re
 import pandas as pd
 import matplotlib.pyplot as plt
+import os
 
 # Function to parse log file and extract relevant metrics
 def parse_log_file(log_file_path):
@@ -27,7 +28,7 @@ def parse_log_file(log_file_path):
     return pd.DataFrame(data)
 
 # Function to plot metrics
-def plot_metrics(df):
+def plot_metrics(df, save_path):
     epochs = df['epoch'].unique()
     avg_metrics_per_epoch = df.groupby('epoch').mean()
 
@@ -70,6 +71,7 @@ def plot_metrics(df):
     plt.legend()
 
     plt.tight_layout()
+    plt.savefig(save_path)
     plt.show()
 
 # Path to the log file
@@ -78,5 +80,10 @@ log_file_path = 'C:\\Users\\aymen\\OneDrive\\Documents\\GitHub\\DRL-1\\training_
 # Parse the log file
 df = parse_log_file(log_file_path)
 
+# Define the save path
+save_path = os.path.join(os.getcwd(), 'mountaincar_metrics.png')
+
 # Plot the metrics
-plot_metrics(df)
+plot_metrics(df, save_path)
+
+print(f'Plots saved to {save_path}')
