@@ -87,8 +87,8 @@ The results, including training metrics and generated plots, will be saved in th
 
 ### Plots
 
-The plots generated during training will be saved in the `plots` directory with filenames indicating the epoch and iteration number. For example:
-
+The plots generated during training will be saved in the `plots` directory with filenames indicating the epoch and iteration number. For example for mauntaincar dataset:
+![Sample Plot](plots\mountaincar_metrics.png)
 ## References
 
 [1] [Deconfounding Reinforcement Learning in Observational Settings](https://arxiv.org/abs/1812.10576)
