@@ -12,6 +12,9 @@ def create_cartpole_datasets():
     mask_dim = 1
     u_dim = 1  # Assuming u_dim for rich_train
 
+    def flatten_state(state):
+        return np.resize(state, (x_dim,))
+
     def collect_data(num_samples):
         states = []
         actions = []
@@ -29,10 +32,11 @@ def create_cartpole_datasets():
 
             for _ in range(nsteps):
                 action = env.action_space.sample()
-                next_state, reward, done, _ = env.step(action)  # Unpack the first four elements
-                
+                result = env.step(action)
+                next_state, reward, done = result[:3]  # Unpack the first three elements
+
                 # Flatten the state to fit the required dimension
-                flat_state = np.resize(state, (x_dim,))
+                flat_state = flatten_state(state)
                 
                 ep_states.append(flat_state)
                 ep_actions.append([action])
@@ -58,7 +62,7 @@ def create_cartpole_datasets():
             masks.append(ep_masks)
             rich.append(ep_rich)
 
-        return np.array(states, dtype=np.float32), np.array(actions, dtype=np.float32), np.array(rewards, dtype=np.float32), np.array(masks, dtype=np.float32), np.array(rich, dtype=np.float32)
+        return np.array(states), np.array(actions), np.array(rewards), np.array(masks), np.array(rich)
 
     # Collect training, validation, and testing data
     x_train, a_train, r_train, mask_train, rich_train = collect_data(num_train)
