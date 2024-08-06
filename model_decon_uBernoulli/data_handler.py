@@ -30,7 +30,7 @@ class DataHandler(object):
         self.load_data(opts)
 
     def load_data(self, opts):
-        if opts['dataset'] == 'mountaincar':
+        if opts['dataset'] == 'mnist':
             self.load_dataset(opts)
         else:
             logging.error(opts['dataset'] + ' cannot be found.')
