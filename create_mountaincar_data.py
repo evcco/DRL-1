@@ -1,8 +1,8 @@
 import gym
 import numpy as np
 
-def create_pendulum_datasets():
-    env = gym.make('Pendulum-v1')
+def create_mountaincar_datasets():
+    env = gym.make('MountainCar-v0')
     num_train = 140000
     num_val_test = 28000
     nsteps = 5
@@ -34,7 +34,7 @@ def create_pendulum_datasets():
                 action = env.action_space.sample()
                 result = env.step(action)
                 next_state, reward, done = result[:3]  # Unpack the first three elements
-                
+
                 # Flatten the state to fit the required dimension
                 flat_state = flatten_state(state)
                 
@@ -70,11 +70,10 @@ def create_pendulum_datasets():
     x_test, a_test, r_test, mask_test, rich_test = collect_data(num_val_test)
 
     # Save datasets as npz files
-    np.savez('pendulum_training_data.npz', x_train=x_train, a_train=a_train, r_train=r_train, mask_train=mask_train, rich_train=rich_train)
-    np.savez('pendulum_validation_data.npz', x_validation=x_validation, a_validation=a_validation, r_validation=r_validation, mask_validation=mask_validation, rich_validation=rich_validation)
-    np.savez('pendulum_testing_data.npz', x_test=x_test, a_test=a_test, r_test=r_test, mask_test=mask_test, rich_test=rich_test)
+    np.savez('mountaincar_training_data.npz', x_train=x_train, a_train=a_train, r_train=r_train, mask_train=mask_train, rich_train=rich_train)
+    np.savez('mountaincar_validation_data.npz', x_validation=x_validation, a_validation=a_validation, r_validation=r_validation, mask_validation=mask_validation, rich_validation=rich_validation)
+    np.savez('mountaincar_testing_data.npz', x_test=x_test, a_test=a_test, r_test=r_test, mask_test=mask_test, rich_test=rich_test)
 
-    print("Pendulum datasets created and saved.")
+    print("MountainCar datasets created and saved.")
 
-create_pendulum_datasets()
-
+create_mountaincar_datasets()

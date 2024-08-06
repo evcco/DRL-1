@@ -6,7 +6,7 @@ import numpy as np
 import tensorflow as tf
 import os
 import time
-
+import logging
 from utils import *
 
 
@@ -635,7 +635,19 @@ class Model_Decon(object):
 ########################################################################################################################
 ############################################# train the model ##########################################################
 ########################################################################################################################
+
     def train_model(self, data):
+        # Ensure the directory for the log file exists
+        log_dir = os.path.join(self.opts['work_dir'])
+        if not os.path.exists(log_dir):
+            os.makedirs(log_dir)
+        
+        log_file = os.path.join(log_dir, 'training.log')
+        
+        # Configure logging
+        logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s', filename=log_file, filemode='w')
+        logger = logging.getLogger()
+
         batch_num = np.floor(data.train_num / self.opts['batch_size']).astype(int)
         counter = self.opts['counter_start']
 
@@ -648,21 +660,14 @@ class Model_Decon(object):
         loss_gt = tf.placeholder(tf.float32, shape=[self.opts['batch_size'], self.opts['nsteps'], None])
         loss_recons = tf.placeholder(tf.float32, shape=[self.opts['batch_size'], self.opts['nsteps'], None])
 
-        # COMMENT 重构误差？
         re_loss = recons_loss(self.opts['recons_cost'], loss_gt, loss_recons)
-
-        # COMMENT 计算-ELBO。nll是negative log likelihood的意思吗？
-        nll, kl_dist, u_kl_divergence, u_accuracy = self.neg_elbo(x_seq, a_seq, r_seq, u_seq,
-                                                                  anneal=self.opts['anneal'], mask=mask)
+        nll, kl_dist, u_kl_divergence, u_accuracy = self.neg_elbo(x_seq, a_seq, r_seq, u_seq, anneal=self.opts['anneal'], mask=mask)
         x_recons, a_recons, r_recons = self.recons_xar_seq_g_xar_seq(x_seq, a_seq, r_seq, mask)
 
-        # COMMENT 从data中随机选出batch_size个数据来
         train_sample_batch_ids = np.random.choice(data.train_num, self.opts['batch_size'], replace=False)
-
         train_op = tf.train.AdamOptimizer(self.opts['lr']).minimize(nll)
 
-        print('starting initializing variables ...')
-
+        logger.info('Starting initializing variables ...')
 
         if self.opts['is_restored']:
             all_vars = tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES)
@@ -672,59 +677,42 @@ class Model_Decon(object):
             self.sess.run(tf.global_variables_initializer())
             self.saver = tf.train.Saver(max_to_keep=50)
 
-        print('starting epoch ...')
+        logger.info('Starting epoch ...')
 
         for epoch in range(self.opts['epoch_start'], self.opts['epoch_start']+self.opts['epoch_num']):
 
             if epoch > self.opts['epoch_start'] and epoch % self.opts['save_every_epoch'] == 0:
-                self.saver.save(self.sess, os.path.join(self.opts['work_dir'], 'model_checkpoints', 'model_decon'),
-                                global_step=counter)
+                self.saver.save(self.sess, os.path.join(self.opts['work_dir'], 'model_checkpoints', 'model_decon'), global_step=counter)
 
             ids_perm = np.random.permutation(data.train_num)
 
             for itr in range(batch_num):
                 start_time = time.time()
-
                 batch_ids = ids_perm[self.opts['batch_size']*itr:self.opts['batch_size']*(itr+1)]
 
-                _, nll_tr = \
-                    self.sess.run([train_op, nll],
-                                  feed_dict={x_seq: data.x_train[batch_ids],
-                                             a_seq: data.a_train[batch_ids],
-                                             r_seq: data.r_train[batch_ids],
-                                             u_seq: data.rich_train[batch_ids],
-                                             mask: data.mask_train[batch_ids]})
+                _, nll_tr = self.sess.run([train_op, nll], feed_dict={x_seq: data.x_train[batch_ids],
+                                                                    a_seq: data.a_train[batch_ids],
+                                                                    r_seq: data.r_train[batch_ids],
+                                                                    u_seq: data.rich_train[batch_ids],
+                                                                    mask: data.mask_train[batch_ids]})
 
-
-                ####################### training ###################################################################
-
-                x_recons_tr, a_recons_tr, r_recons_tr = \
-                    self.sess.run([x_recons, a_recons, r_recons],
-                                  feed_dict={x_seq: data.x_train[train_sample_batch_ids],
-                                             a_seq: data.a_train[train_sample_batch_ids],
-                                             r_seq: data.r_train[train_sample_batch_ids],
-                                             u_seq: data.rich_train[train_sample_batch_ids],
-                                             mask: data.mask_train[train_sample_batch_ids]})
-
+                x_recons_tr, a_recons_tr, r_recons_tr = self.sess.run([x_recons, a_recons, r_recons],
+                                                                    feed_dict={x_seq: data.x_train[train_sample_batch_ids],
+                                                                                a_seq: data.a_train[train_sample_batch_ids],
+                                                                                r_seq: data.r_train[train_sample_batch_ids],
+                                                                                u_seq: data.rich_train[train_sample_batch_ids],
+                                                                                mask: data.mask_train[train_sample_batch_ids]})
 
                 x_tr_loss = self.sess.run(re_loss, feed_dict={loss_gt: data.x_train[train_sample_batch_ids],
-                                                              loss_recons: x_recons_tr})
+                                                            loss_recons: x_recons_tr})
                 a_tr_loss = self.sess.run(re_loss, feed_dict={loss_gt: data.a_train[train_sample_batch_ids],
-                                                              loss_recons: a_recons_tr})
+                                                            loss_recons: a_recons_tr})
                 r_tr_loss = self.sess.run(re_loss, feed_dict={loss_gt: data.r_train[train_sample_batch_ids],
-                                                              loss_recons: r_recons_tr})
-
-
-
+                                                            loss_recons: r_recons_tr})
 
                 elapsed_time = time.time() - start_time
 
+                logger.info('epoch: {:d}, itr: {:d}, nll_tr: {:f}, x_tr_loss: {:f}, a_tr_loss: {:f}, r_tr_loss: {:f}, elapsed_time: {:f}'.format(
+                    epoch, itr, nll_tr, x_tr_loss, a_tr_loss, r_tr_loss, elapsed_time))
 
-                print('epoch: {:d}, itr: {:d}, nll_tr: {:f}, x_tr_loss: {:f}, a_tr_loss: {:f}, r_tr_loss: {:f}, '
-                      'elapsed_time: {:f};'.format(epoch, itr, nll_tr, x_tr_loss, a_tr_loss, r_tr_loss, elapsed_time))
-
-
-        self.saver.save(self.sess,
-                        os.path.join(self.opts['work_dir'], 'model_checkpoints', 'model_decon'),
-                        global_step=counter)
-
+        self.saver.save(self.sess, os.path.join(self.opts['work_dir'], 'model_checkpoints', 'model_decon'), global_step=counter)
