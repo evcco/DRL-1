@@ -87,9 +87,9 @@ The results, including training metrics and generated plots, will be saved in th
 
 ### Plots
 
-The plots generated during training will be saved in the `plots` directory with filenames indicating the epoch and iteration number. For example for mauntaincar dataset:
+The plots generated during training will be saved in the `plots` directory with filenames indicating the epoch and iteration number. For example for mountaincar dataset:
 
-![Sample Plot](DRL-1\plots\mountaincar_metrics.png)
+![Sample Plot](plots/mountaincar_metrics.png)
 
 ## References
 
