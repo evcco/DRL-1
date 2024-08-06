@@ -30,7 +30,30 @@ In default the data are organised as follows. Feel free to modify these paramete
     mask_test:          28,000          5             1
     
 N.B. 1st dim: the number of sequences; 2nd dim: steps of one sequence; 3rd dim: dim of data.
+### Installation
 
+1. **Clone the repository:**
+    ```bash
+    git clone (https://github.com/evcco/DRL-1)
+    cd drl
+    ```
+
+2. **Create and activate the Conda environment:**
+    ```bash
+    conda create -n deconf_rl python=3.7
+    conda activate deconf_rl
+    ```
+
+3. **Install the required packages:**
+    ```bash
+    pip install -r requirements.txt
+    ```
+4. **create the datasets using:**
+    ```bash
+    python create_mountaincar_data.py
+    ```
+5. **Update Config.py according to which dataset you chose:**
+     
 ## How to Run
 This repo consists of three folders:
 + **model_decon_uGaussian**: learning M_Decon when the dimension of u is set to 2 and the prior over u is assumed to be a factorised standard Gaussian.
@@ -58,8 +81,16 @@ model_config['policy_checkpoint'] = './training_results/policy_checkpoints/polic
 
 ########################################################################################################################
 ```
+### Results
+
+The results, including training metrics and generated plots, will be saved in the `plots` directory.
+
+### Plots
+
+The plots generated during training will be saved in the `plots` directory with filenames indicating the epoch and iteration number. For example:
 
 ## References
 
 [1] [Deconfounding Reinforcement Learning in Observational Settings](https://arxiv.org/abs/1812.10576)
 Chaochao Lu, Bernhard Schölkopf, José Miguel Hernández-Lobato, 2018
+
