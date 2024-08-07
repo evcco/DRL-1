@@ -111,7 +111,7 @@ The results, including training metrics and generated plots, will be saved in th
 
 The plots generated during training will be saved in the `plots` directory with filenames indicating the epoch and iteration number. For example for a modified MNIST dataset:
 
-![Sample Plot](plots/mnist_metrics.png)
+![MNIST](plots\mnist_metrics_model_decon_uBernoulli.png)
 
 ## References
 
