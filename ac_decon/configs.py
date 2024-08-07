@@ -12,17 +12,17 @@ model_config = OrderedDict()
 
 ########################################## data and model path Configuration ###########################################
 
-model_config['work_dir'] = './training_results'
+model_config['work_dir'] = './training_results_AC_model'
 model_config['data_dir'] = './dataset'
-model_config['training_data'] = './dataset/training_data.npz'
-model_config['validation_data'] = './dataset/validation_data.npz'
-model_config['testing_data'] = './dataset/testing_data.npz'
+model_config['training_data'] = './mnist_training_data.npz'
+model_config['validation_data'] = './mnist_validation_data.npz'
+model_config['testing_data'] = './mnist:testing_data.npz'
 model_config['model_checkpoint'] = './training_results/model_checkpoints/model_decon_uBernoulli'
 model_config['policy_checkpoint'] = './training_results/policy_checkpoints/policy_decon'
 
 ########################################################################################################################
 
-model_config['dataset'] = 'dataset_name'
+model_config['dataset'] = 'mnist'
 model_config['seed'] = 123
 model_config['lr'] = 0.0001
 
