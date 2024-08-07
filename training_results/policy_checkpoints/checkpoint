@@ -1,0 +1,3 @@
+model_checkpoint_path: "policy_vanilla-199"
+all_model_checkpoint_paths: "policy_vanilla-99"
+all_model_checkpoint_paths: "policy_vanilla-199"
