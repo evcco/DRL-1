@@ -75,7 +75,7 @@ def plot_metrics(df, save_path):
     plt.show()
 
 # Path to the log file
-log_file_path = 'C:\\Users\\aymen\\OneDrive\\Documents\\GitHub\\DRL-1\\training_results\\training.log'
+log_file_path = 'C:\\Users\\aymen\\OneDrive\\Documents\\GitHub\\DRL-1\\training_results\\cartpole.log'
 
 # Parse the log file
 df = parse_log_file(log_file_path)

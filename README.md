@@ -73,15 +73,37 @@ the directories of data and models.
 
 model_config['work_dir'] = './training_results'
 model_config['data_dir'] = './dataset'
-model_config['training_data'] = './dataset/training_data.npz'
-model_config['validation_data'] = './dataset/validation_data.npz'
-model_config['testing_data'] = './dataset/testing_data.npz'
+model_config['training_data'] = './dataset_training_data.npz'
+model_config['validation_data'] = './dataset_validation_data.npz'
+model_config['testing_data'] = './dataset_testing_data.npz'
 model_config['model_checkpoint'] = './training_results/model_checkpoints/model_alt'
 model_config['policy_checkpoint'] = './training_results/policy_checkpoints/policy_alt'
 
 ########################################################################################################################
 ```
 ### Results
+# Model_Decon Training Metrics
+
+During the training of the `Model_Decon`, several key metrics are logged to monitor the model's performance. These metrics are saved in the log file (`mnist.log`) located in the specified directory. Below is a brief explanation of each metric:
+
+1. **Negative Log Likelihood (nll_tr)**:
+   - This metric represents the negative log-likelihood of the training data given the model's parameters. It measures how well the model predicts the training data. Lower values indicate better model performance.
+
+2. **Reconstruction Losses**:
+   - **x_tr_loss**: Measures the reconstruction loss for the states (x). Indicates how well the model can reconstruct the input states from the latent representation.
+   - **a_tr_loss**: Measures the reconstruction loss for the actions (a). Indicates how well the model can reconstruct the actions taken in the environment.
+   - **r_tr_loss**: Measures the reconstruction loss for the rewards (r). Indicates how well the model can reconstruct the rewards received.
+
+3. **KL Divergence**:
+   - `kl_dist`: Represents the Kullback-Leibler (KL) divergence between the approximate posterior distribution and the prior distribution for the latent variables. Lower values indicate a better approximation of the posterior.
+
+4. **KL Divergence for u**:
+   - `u_kl_divergence`: Measures the KL divergence for the variable `u`. Indicates how much the distribution of `u` diverges from its prior distribution. Lower values indicate a better approximation.
+
+5. **Accuracy of u**:
+   - `u_accuracy`: Measures the accuracy of the predictions for `u`. Indicates how well the model predicts the binary variable `u`.
+
+These metrics provide a comprehensive view of the model's training process, helping to understand how well the model is fitting the training data, reconstructing the input data, and approximating the latent variables.
 
 The results, including training metrics and generated plots, will be saved in the `plots` directory.
 
