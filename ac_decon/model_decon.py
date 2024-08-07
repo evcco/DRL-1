@@ -653,6 +653,7 @@ class Model_Decon(object):
 ############################################# train the model ##########################################################
 ########################################################################################################################
 # COMMENT 训练好模型之后，把模型参数放到文件里面。
+    
     def train_model(self, data):
         # Ensure the directory for the log file exists
         log_dir = os.path.join(self.opts['work_dir'])

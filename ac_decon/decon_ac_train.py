@@ -161,8 +161,24 @@ class AC_Decon(object):
     def create_env(self):
         self.sess.run(tf.global_variables_initializer())
         self.saver = tf.train.Saver(self.model_all_vars)
-        self.saver.restore(self.sess, self.opts['model_checkpoint'])
+
+        # Define the default checkpoint path
+        default_checkpoint_path = "./model_decon_uBernoulli"  # Adjust this path as necessary
+
+        # Get the checkpoint path from opts or use the default
+        checkpoint_path = self.opts.get('model_checkpoint', default_checkpoint_path)
+        
+        # Check if checkpoint_path is not None and exists
+        if checkpoint_path and os.path.exists(checkpoint_path + ".index"):
+            self.saver.restore(self.sess, checkpoint_path)
+            print(f"Model restored from checkpoint: {checkpoint_path}")
+        else:
+            print(f"No valid checkpoint found at {checkpoint_path}. Initializing variables.")
+        
+        # Reinitialize the saver to keep only a maximum of 50 checkpoints
         self.saver = tf.train.Saver(max_to_keep=50)
+
+
 
 
     def compute_z_init(self, x, a, r):
@@ -239,86 +255,81 @@ class AC_Decon(object):
 
         self.create_env()
 
+        work_dir = self.opts.get('work_dir', './training_results')
+        plots_dir = os.path.join(work_dir, 'plots')
+        os.makedirs(plots_dir, exist_ok=True)
+        
+        checkpoints_dir = os.path.join(work_dir, 'policy_checkpoints')
+        os.makedirs(checkpoints_dir, exist_ok=True)
+
         for episode in range(self.opts['episode_num']):
 
-            f = open(os.path.join(self.opts['work_dir'], 'plots', 'ac_decon_reward_data.txt'), 'a+')
+            reward_data_path = os.path.join(plots_dir, 'ac_decon_reward_data.txt')
+            with open(reward_data_path, 'a+') as f:
 
-            if episode > self.opts['episode_start'] and episode % self.opts['save_every_episode'] == 0:
-                reward_filename = 'ac_decon_reward_plot_epoch_{:d}.png'.format(episode)
-                save_reward_plots(self.opts, reward_list, reward_filename)
-                self.saver.save(self.sess, os.path.join(self.opts['work_dir'], 'policy_checkpoints', 'policy_decon'),
-                                global_step=total_episode)
+                if episode > self.opts['episode_start'] and episode % self.opts['save_every_episode'] == 0:
+                    reward_filename = 'ac_decon_reward_plot_epoch_{:d}.png'.format(episode)
+                    save_reward_plots(self.opts, reward_list, reward_filename)
+                    self.saver.save(self.sess, os.path.join(checkpoints_dir, 'policy_decon'), global_step=total_episode)
 
-            total_reward = 0
-            steps_in_episode = 0
+                total_reward = 0
+                steps_in_episode = 0
 
-            tr_batch_ids = np.random.choice(data.train_num, self.opts['batch_size'], replace=False)
-            tr_nstep_ids = np.random.choice(self.opts['nsteps'], 1)
-            tr_x_init = np.reshape(data.x_train[tr_batch_ids][:, tr_nstep_ids, :],
-                                   [self.opts['batch_size'], self.opts['x_dim']])
-            tr_a_init = np.reshape(data.a_train[tr_batch_ids][:, tr_nstep_ids, :],
-                                   [self.opts['batch_size'], self.opts['a_dim']])
-            tr_r_init = np.reshape(data.r_train[tr_batch_ids][:, tr_nstep_ids, :],
-                                   [self.opts['batch_size'], self.opts['r_dim']])
+                tr_batch_ids = np.random.choice(data.train_num, self.opts['batch_size'], replace=False)
+                tr_nstep_ids = np.random.choice(self.opts['nsteps'], 1)
+                tr_x_init = np.reshape(data.x_train[tr_batch_ids][:, tr_nstep_ids, :],
+                                       [self.opts['batch_size'], self.opts['x_dim']])
+                tr_a_init = np.reshape(data.a_train[tr_batch_ids][:, tr_nstep_ids, :],
+                                       [self.opts['batch_size'], self.opts['a_dim']])
+                tr_r_init = np.reshape(data.r_train[tr_batch_ids][:, tr_nstep_ids, :],
+                                       [self.opts['batch_size'], self.opts['r_dim']])
 
-            z = self.compute_z_init(tr_x_init, tr_a_init, tr_r_init)
-            u_est = self.compute_u_init(tr_x_init, tr_a_init, tr_r_init)
+                z = self.compute_z_init(tr_x_init, tr_a_init, tr_r_init)
+                u_est = self.compute_u_init(tr_x_init, tr_a_init, tr_r_init)
 
-            for step in range(self.opts['max_steps_in_episode']):
-                action = self.choose_action(z, False)
+                for step in range(self.opts['max_steps_in_episode']):
+                    action = self.choose_action(z, False)
 
-                z_next, reward, done, reward_samples = self.step(z, action, tr_x_init, u_est)
+                    z_next, reward, done, reward_samples = self.step(z, action, tr_x_init, u_est)
 
-                total_reward += reward
+                    total_reward += reward
 
-                self.add_to_memory((np.reshape(z, self.opts['z_dim']), np.reshape(action, self.opts['a_dim']), reward,
-                                    np.reshape(z_next, self.opts['z_dim']), 0.0 if done else 1.0))
+                    self.add_to_memory((np.reshape(z, self.opts['z_dim']), np.reshape(action, self.opts['a_dim']), reward,
+                                        np.reshape(z_next, self.opts['z_dim']), 0.0 if done else 1.0))
 
+                    # update parameters using mini-batch of experience
+                    if total_steps % self.opts['train_every'] == 0 and len(self.replay_memory) >= self.opts['mini_batch_size']:
+                        mini_batch = self.sample_from_memory(self.opts['mini_batch_size'])
 
-                # update parameters using mini-batch of experience
+                        _, _ = self.sess.run(
+                            [self.critic_train_op, self.actor_train_op],
+                            feed_dict={
+                                self.z_ph: np.asarray([elem[0] for elem in mini_batch]),
+                                self.a_ph: np.asarray([elem[1] for elem in mini_batch]),
+                                self.r_ph: np.asarray([elem[2] for elem in mini_batch]),
+                                self.z_next_ph: np.asarray([elem[3] for elem in mini_batch]),
+                                self.is_not_terminal_ph: np.asarray([elem[4] for elem in mini_batch]),
+                                self.is_training_ph: True
+                            }
+                        )
 
-                if total_steps % self.opts['train_every'] == 0 \
-                        and len(self.replay_memory) >= self.opts['mini_batch_size']:
-                    mini_batch = self.sample_from_memory(self.opts['mini_batch_size'])
+                        _ = self.sess.run(self.update_targets_op)
 
-                    _, _ = self.sess.run(
-                        [self.critic_train_op, self.actor_train_op],
-                        feed_dict={
-                            self.z_ph: np.asarray([elem[0] for elem in mini_batch]),
-                            self.a_ph: np.asarray([elem[1] for elem in mini_batch]),
-                            self.r_ph: np.asarray([elem[2] for elem in mini_batch]),
-                            self.z_next_ph: np.asarray([elem[3] for elem in mini_batch]),
-                            self.is_not_terminal_ph: np.asarray([elem[4] for elem in mini_batch]),
-                            self.is_training_ph: True
-                        }
-                    )
+                    z = z_next
+                    total_steps += 1
+                    steps_in_episode += 1
 
-                    _ = self.sess.run(self.update_targets_op)
+                    if done:
+                        _ = self.sess.run(self.episode_increase_op)
+                        break
 
+                total_episode += 1
 
-                z = z_next
-                total_steps += 1
-                steps_in_episode += 1
+                print('Episode: {:d}, Steps: {:d}, Reward: {:f}'.format(episode, steps_in_episode, total_reward))
 
-                if done:
-                    _ = self.sess.run(self.episode_increase_op)
-                    break
+                reward_que.append(total_reward)
+                reward_list.append(np.mean(reward_que))
 
-            total_episode += 1
+                f.write('{:f}\n'.format(np.mean(reward_que)))
 
-            print('Episode: {:d}, Steps: {:d}, Reward: {:f}'.format(episode, steps_in_episode, total_reward))
-
-            reward_que.append(total_reward)
-            reward_list.append(np.mean(reward_que))
-
-            f.write('{:f}\n'.format(np.mean(reward_que)))
-
-
-            f.close()
-
-        self.saver.save(self.sess, os.path.join(self.opts['work_dir'], 'policy_checkpoints', 'policy_decon'),
-                        global_step=total_episode)
-
-
-
-
+        self.saver.save(self.sess, os.path.join(checkpoints_dir, 'policy_decon'), global_step=total_episode)

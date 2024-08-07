@@ -1,7 +1,7 @@
 #########################
 ## Author: Chaochao Lu ##
 #########################
-from collections import OrderedDict
+from collections import OrderedDict # TOLEARN from ... import ... 的用法
 import tensorflow as tf
 
 ########################################################################################################################
@@ -12,17 +12,23 @@ model_config = OrderedDict()
 
 ########################################## data and model path Configuration ###########################################
 
-model_config['work_dir'] = './training_results_AC_model'
+
+model_config['work_dir'] = './training_results'
 model_config['data_dir'] = './dataset'
 model_config['training_data'] = './mnist_training_data.npz'
 model_config['validation_data'] = './mnist_validation_data.npz'
-model_config['testing_data'] = './mnist:testing_data.npz'
+model_config['testing_data'] = './mnist_testing_data.npz'
 model_config['model_checkpoint'] = './training_results/model_checkpoints/model_decon_uBernoulli'
 model_config['policy_checkpoint'] = './training_results/policy_checkpoints/policy_decon'
+
 
 ########################################################################################################################
 
 model_config['dataset'] = 'mnist'
+
+########################################################################################################################
+
+#model_config['dataset'] = 'dataset_name'
 model_config['seed'] = 123
 model_config['lr'] = 0.0001
 
@@ -38,7 +44,7 @@ model_config['init_std'] = 0.0099999
 model_config['init_bias'] = 0.0
 model_config['filter_size'] = 5
 
-model_config['a_range'] = 2  
+model_config['a_range'] = 2
 
 model_config['z_dim'] = 50
 model_config['x_dim'] = 784  # 28 x 28
@@ -186,6 +192,7 @@ model_config['qrgxa_net_outlayers'] = [[model_config['r_dim'], tf.nn.sigmoid],
 
 
 model_config['model_bn_is_training'] = True
+
 
 ########################################################################################################################
 ########################################## AC Configuration ############################################################
