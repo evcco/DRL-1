@@ -82,7 +82,7 @@ model_config['policy_checkpoint'] = './training_results/policy_checkpoints/polic
 ########################################################################################################################
 ```
 ### Results
-# Model_Decon Training Metrics
+#### Model_Decon Training Metrics
 
 During the training of the `Model_Decon`, several key metrics are logged to monitor the model's performance. These metrics are saved in the log file (`mnist.log`) located in the specified directory. Below is a brief explanation of each metric:
 
