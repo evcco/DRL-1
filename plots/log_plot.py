@@ -7,7 +7,6 @@ import os
 def parse_log_file(log_file_path):
     data = {
         'epoch': [],
-        'itr': [],
         'nll_tr': [],
         'x_tr_loss': [],
         'a_tr_loss': [],
@@ -16,14 +15,13 @@ def parse_log_file(log_file_path):
 
     with open(log_file_path, 'r') as file:
         for line in file:
-            match = re.search(r'epoch: (\d+), itr: (\d+), nll_tr: ([\d.]+), x_tr_loss: ([\d.]+), a_tr_loss: ([\d.]+), r_tr_loss: ([\d.]+), elapsed_time: ([\d.]+)', line)
+            match = re.search(r'epoch: (\d+),.*?nll_tr: ([\d.]+), x_tr_loss: ([\d.]+), a_tr_loss: ([\d.]+), r_tr_loss: ([\d.]+)', line)
             if match:
                 data['epoch'].append(int(match.group(1)))
-                data['itr'].append(int(match.group(2)))
-                data['nll_tr'].append(float(match.group(3)))
-                data['x_tr_loss'].append(float(match.group(4)))
-                data['a_tr_loss'].append(float(match.group(5)))
-                data['r_tr_loss'].append(float(match.group(6)))
+                data['nll_tr'].append(float(match.group(2)))
+                data['x_tr_loss'].append(float(match.group(3)))
+                data['a_tr_loss'].append(float(match.group(4)))
+                data['r_tr_loss'].append(float(match.group(5)))
     
     return pd.DataFrame(data)
 
@@ -34,40 +32,36 @@ def plot_metrics(df, save_path):
 
     plt.figure(figsize=(14, 8))
 
-    # Subplot for NLL
+    # Subplot for NLL Training Loss (Epoch Avg)
     plt.subplot(2, 2, 1)
-    plt.plot(df['itr'], df['nll_tr'], label='NLL Training Loss (Iteration)')
-    plt.plot(epochs, avg_metrics_per_epoch['nll_tr'], label='NLL Training Loss (Epoch Avg)', linewidth=2)
-    plt.xlabel('Iteration')
+    plt.plot(epochs, avg_metrics_per_epoch['nll_tr'], label='NLL Training Loss (Epoch Avg)', linewidth=2, color='blue')
+    plt.xlabel('Epoch')
     plt.ylabel('NLL Training Loss')
-    plt.title('NLL Training Loss Over Iterations')
+    plt.title('NLL Training Loss Over Epochs\n(MNIST Dataset)')
     plt.legend()
 
-    # Subplot for X Training Loss
+    # Subplot for X Training Loss (Epoch Avg)
     plt.subplot(2, 2, 2)
-    plt.plot(df['itr'], df['x_tr_loss'], label='X Training Loss (Iteration)')
-    plt.plot(epochs, avg_metrics_per_epoch['x_tr_loss'], label='X Training Loss (Epoch Avg)', linewidth=2)
-    plt.xlabel('Iteration')
+    plt.plot(epochs, avg_metrics_per_epoch['x_tr_loss'], label='X Training Loss (Epoch Avg)', linewidth=2, color='green')
+    plt.xlabel('Epoch')
     plt.ylabel('X Training Loss')
-    plt.title('X Training Loss Over Iterations')
+    plt.title('X Training Loss Over Epochs\n(MNIST Dataset)')
     plt.legend()
 
-    # Subplot for A Training Loss
+    # Subplot for A Training Loss (Epoch Avg)
     plt.subplot(2, 2, 3)
-    plt.plot(df['itr'], df['a_tr_loss'], label='A Training Loss (Iteration)')
-    plt.plot(epochs, avg_metrics_per_epoch['a_tr_loss'], label='A Training Loss (Epoch Avg)', linewidth=2)
-    plt.xlabel('Iteration')
+    plt.plot(epochs, avg_metrics_per_epoch['a_tr_loss'], label='A Training Loss (Epoch Avg)', linewidth=2, color='red')
+    plt.xlabel('Epoch')
     plt.ylabel('A Training Loss')
-    plt.title('A Training Loss Over Iterations')
+    plt.title('A Training Loss Over Epochs\n(MNIST Dataset)')
     plt.legend()
 
-    # Subplot for R Training Loss
+    # Subplot for R Training Loss (Epoch Avg)
     plt.subplot(2, 2, 4)
-    plt.plot(df['itr'], df['r_tr_loss'], label='R Training Loss (Iteration)')
-    plt.plot(epochs, avg_metrics_per_epoch['r_tr_loss'], label='R Training Loss (Epoch Avg)', linewidth=2)
-    plt.xlabel('Iteration')
+    plt.plot(epochs, avg_metrics_per_epoch['r_tr_loss'], label='R Training Loss (Epoch Avg)', linewidth=2, color='purple')
+    plt.xlabel('Epoch')
     plt.ylabel('R Training Loss')
-    plt.title('R Training Loss Over Iterations')
+    plt.title('R Training Loss Over Epochs\n(MNIST Dataset)')
     plt.legend()
 
     plt.tight_layout()
@@ -75,13 +69,16 @@ def plot_metrics(df, save_path):
     plt.show()
 
 # Path to the log file
-log_file_path = 'C:\\Users\\aymen\\OneDrive\\Documents\\GitHub\\DRL-1\\training_results\\cartpole.log'
+log_file_path = 'C:\\Users\\aymen\\OneDrive\\Documents\\GitHub\\DRL-1\\training_results\\mnist.log'
 
 # Parse the log file
 df = parse_log_file(log_file_path)
 
 # Define the save path
-save_path = os.path.join(os.getcwd(), 'mountaincar_metrics.png')
+save_dir = 'C:\\Users\\aymen\\OneDrive\\Documents\\GitHub\\DRL-1\\plots'
+if not os.path.exists(save_dir):
+    os.makedirs(save_dir)
+save_path = os.path.join(save_dir, 'mnist_metrics_model_decon_uBernoulli.png')
 
 # Plot the metrics
 plot_metrics(df, save_path)
