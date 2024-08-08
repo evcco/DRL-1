@@ -113,6 +113,8 @@ The plots generated during training will be saved in the `plots` directory with 
 
 ![MNIST](plots/mnist_metrics_model_decon_uBernoulli.png)
 
+The following is the rewards per episode for each for Vanilla AC Networks vs AC Networks with Deconfounding Model.
+![COMP](training_results\performance_comparison.png)
 ## References
 
 [1] [Deconfounding Reinforcement Learning in Observational Settings](https://arxiv.org/abs/1812.10576)
